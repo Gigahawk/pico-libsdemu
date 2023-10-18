@@ -24,6 +24,15 @@
     activates the card's initialization process */
 #define SD_ACMD41 41
 
+/** start data token for read or write single block*/
+#define DATA_START_BLOCK 0XFE
+/** write data accepted token */
+#define DATA_RES_ACCEPTED 0X05
+/** size of a sector in bytes */
+#define SD_SECTOR_SIZE 512
+
+
+
 /*! \brief Setup a SPI peripheral for SD emulation
  *  \ingroup pico-libsdemu
  *
@@ -33,5 +42,10 @@
  *  to 0x00 if nothing is in the buffer
  */
 void setup_sd_emu(spi_inst_t* spi);
+
+void wait_for_cmd(spi_inst_t* spi, uint8_t* cmd_buf);
+
+void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf);
+
 
 #endif
