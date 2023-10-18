@@ -201,11 +201,19 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
                 do {
                     spi_read(spi, resp, 1);
                 } while(resp[0] != DATA_START_BLOCK);
-                // SPI interrupt doesn't seem to fire here if do a large read
-                // Seems like if we use spi_read 0xFF still gets filled to the bus
-                // until the transfer ends, and then we get a bunch of 0x00 instead,
-                // DATA_RES_ACCEPTED never shows up on the bus
-                spi_read_large(spi, block, SD_SECTOR_SIZE, true);
+                if (block != NULL) {
+                    // SPI interrupt doesn't seem to fire here if do a large read
+                    // Seems like if we use spi_read 0xFF still gets filled to the bus
+                    // until the transfer ends, and then we get a bunch of 0x00 instead,
+                    // DATA_RES_ACCEPTED never shows up on the bus
+                    spi_read_large(spi, block, SD_SECTOR_SIZE, true);
+                } else {
+                    // We have nowhere to write the data, dump it to resp
+                    // TODO: find out if this is fast enough?
+                    for(int i=0; i < SD_SECTOR_SIZE; ++i) {
+                        spi_read_large(spi, resp, 1, true);
+                    }
+                }
                 // Read out CRC
                 // TODO: do something with this?
                 spi_read_large(spi, resp, 2, true);
