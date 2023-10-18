@@ -39,7 +39,7 @@ void _spi1_irq_handler() {
     _spi_irq_handler(spi1);
 }
 
-extern uint8_t* get_block(uint32_t block_num, bool writable);
+extern uint8_t* get_sd_block(uint32_t block_num, bool writable);
 
 void spi_clear_read_buf(spi_inst_t *spi) {
     uint8_t i;
@@ -167,7 +167,7 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
                 // We always emulate an SD card, the arg is always block number
                 block_num = get_block_num(arg);
                 // Request the block from the application, can be read only
-                block = get_block(block_num, false);
+                block = get_sd_block(block_num, false);
                 // Disable IRQ, we don't want the buffer to accidentally be
                 // filled with idle data
                 _sd_enable_irq(spi, false);
@@ -188,7 +188,7 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
                 // We always emulate an SD card, the arg is always block number
                 block_num = get_block_num(arg);
                 // Request the block from the application, must be writable
-                block = get_block(block_num, true);
+                block = get_sd_block(block_num, true);
                 // Ensure read buffer is cleared so that we can recieve the start block right away
                 spi_clear_read_buf(spi);
                 // Return an R1 response

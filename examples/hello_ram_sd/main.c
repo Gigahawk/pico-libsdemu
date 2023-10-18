@@ -60,7 +60,7 @@ Sector header = {
     &sec1,
 };
 
-uint8_t* get_block(uint32_t block_num, bool writable) {
+uint8_t* get_sd_block(uint32_t block_num, bool writable) {
     Sector *ptr = &header;
     while(1) {
         if(ptr->block == block_num) {
