@@ -60,6 +60,9 @@ Sector header = {
     &sec1,
 };
 
+// Define a get_sd_block function in your application that returns a pointer
+// to a SD_SECTOR_SIZE sized block of memory that the library can read/write to
+// writable will be true if the library wants to write to the block
 uint8_t* get_sd_block(uint32_t block_num, bool writable) {
     Sector *ptr = &header;
     while(1) {
