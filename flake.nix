@@ -12,10 +12,11 @@
         version = "1.5.1";
         src = fetchFromGitHub {
           fetchSubmodules = true;
-          owner = "raspberrypi";
+          # Hack to support Adafruit Feather RP2040 with USB A Host
+          owner = "Gigahawk";
           repo = pname;
-          rev = version;
-          sha256 = "sha256-GY5jjJzaENL3ftuU5KpEZAmEZgyFRtLwGVg3W1e/4Ho=";
+          rev = "79648dbc708dccd33abe3a1fe9e495d12c508445";
+          sha256 = "sha256-gLC0FX4aJT0+srjoObMx68Pc4RzqmakJqrPqFLzyM8Q=";
         };
         }));
       pkgs = nixpkgs.legacyPackages.${system};
