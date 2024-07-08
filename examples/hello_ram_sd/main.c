@@ -7,6 +7,8 @@
 #include "pico/stdlib.h"
 #include "pico/libsdemu.h"
 
+#define DEFAULT_SPI PICO_DEFAULT_SPI ? spi1 : spi0
+
 typedef struct Sector {
     uint32_t block;
     uint8_t data[SD_SECTOR_SIZE];
@@ -97,21 +99,18 @@ void init_sd() {
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
 
-    setup_sd_emu(spi0);
+    setup_sd_emu(DEFAULT_SPI);
 }
 
 int main() {
     uint8_t cmd_buf[SD_CMD_LEN];
     bool waiting_for_cmd = true;
 
-    stdio_init_all();
-    while(!stdio_usb_connected());
-
     init_sd();
 
     while(1) {
-        wait_for_cmd(spi0, cmd_buf);
-        handle_cmd(spi0, cmd_buf);
+        wait_for_cmd(DEFAULT_SPI, cmd_buf);
+        handle_cmd(DEFAULT_SPI, cmd_buf);
     }
     return 0;
 }
