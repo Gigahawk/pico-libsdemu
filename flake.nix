@@ -23,6 +23,7 @@
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
             pico-sdk151
+            python3
             cmake
             clang-tools
             gcc-arm-embedded
