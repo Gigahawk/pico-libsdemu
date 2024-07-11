@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
-#include "pico/libsdemu.h"
+#include "libsdemu.h"
 
 #define DEFAULT_SPI PICO_DEFAULT_SPI ? spi1 : spi0
 

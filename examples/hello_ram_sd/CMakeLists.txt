@@ -1,12 +1,15 @@
-cmake_minimum_required(VERSION 3.12)
 set(PROJECT hello_ram_sd)
 
-# rest of your project
-add_executable(${PROJECT}
+add_executable(${PROJECT})
+
+target_sources(${PROJECT} PRIVATE
     main.c
 )
 
-target_link_libraries(${PROJECT} pico-libsdemu)
+target_link_libraries(${PROJECT}
+    pico_stdlib
+    pico-libsdemu
+)
 
 if(DEFINED CS_PIN)
     message("Setting PICO_DEFAULT_SPI_CSN_PIN to ${CS_PIN}")
