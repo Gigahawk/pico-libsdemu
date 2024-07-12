@@ -39,7 +39,10 @@ void _spi1_irq_handler() {
     _spi_irq_handler(spi1);
 }
 
-extern uint8_t* get_sd_block(uint32_t block_num, bool writable);
+uint8_t read_buffer[SD_SECTOR_SIZE];
+uint8_t write_buffer[SD_SECTOR_SIZE];
+extern bool read_sd_block(uint32_t block_num, uint8_t* buff);
+extern bool write_sd_block(uint32_t block_num, uint8_t* buff);
 
 void spi_clear_read_buf(spi_inst_t *spi) {
     uint8_t i;
@@ -139,7 +142,7 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
     uint8_t* arg = cmd_buf + 1;
     uint8_t cmd = cmd_buf[0] & 0b00111111;
     uint8_t resp[5] = {0};
-    uint8_t* block;
+    bool access_ok;
     // TODO: check CRC?
     if(!app_mode) {
         switch(cmd) {
@@ -166,18 +169,18 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
                 spi_write_const(spi, 0x00, 1);
                 // We always emulate an SD card, the arg is always block number
                 block_num = get_block_num(arg);
-                // Request the block from the application, can be read only
-                block = get_sd_block(block_num, false);
+                // Read the block from the application
+                access_ok = read_sd_block(block_num, read_buffer);
                 // Disable IRQ, we don't want the buffer to accidentally be
                 // filled with idle data
                 _sd_enable_irq(spi, false);
                 spi_write_const(spi, DATA_START_BLOCK, 1);
                 // Respond with data (if available) + CRC
                 // TODO: calculate CRC?
-                if(block == NULL) {
+                if(!access_ok) {
                     spi_write_const(spi, 0x00, SD_SECTOR_SIZE + 2);
                 } else {
-                    spi_write(spi, block, SD_SECTOR_SIZE);
+                    spi_write(spi, read_buffer, SD_SECTOR_SIZE);
                     spi_write_const(spi, 0x00, 2);
                 }
                 // Ensure IRQ is reenabled and run
@@ -187,8 +190,6 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
             case SD_CMD24:  // WRITE_BLOCK
                 // We always emulate an SD card, the arg is always block number
                 block_num = get_block_num(arg);
-                // Request the block from the application, must be writable
-                block = get_sd_block(block_num, true);
                 // Ensure read buffer is cleared so that we can recieve the start block right away
                 spi_clear_read_buf(spi);
                 // Return an R1 response
@@ -201,22 +202,11 @@ void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf) {
                 do {
                     spi_read(spi, resp, 1);
                 } while(resp[0] != DATA_START_BLOCK);
-                if (block != NULL) {
-                    // SPI interrupt doesn't seem to fire here if do a large read
-                    // Seems like if we use spi_read 0xFF still gets filled to the bus
-                    // until the transfer ends, and then we get a bunch of 0x00 instead,
-                    // DATA_RES_ACCEPTED never shows up on the bus
-                    spi_read_large(spi, block, SD_SECTOR_SIZE, true);
-                } else {
-                    // We have nowhere to write the data, dump it to resp
-                    // TODO: find out if this is fast enough?
-                    for(int i=0; i < SD_SECTOR_SIZE; ++i) {
-                        spi_read_large(spi, resp, 1, true);
-                    }
-                }
+                spi_read(spi, write_buffer, SD_SECTOR_SIZE);
                 // Read out CRC
                 // TODO: do something with this?
-                spi_read_large(spi, resp, 2, true);
+                spi_read(spi, resp, 2);
+                write_sd_block(block_num, write_buffer);
                 // Return idle value back to normal
                 _set_spi_tx_idle_value(spi, 0xFF);
                 break;

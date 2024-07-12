@@ -6,6 +6,7 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
     let
+      pkgs = nixpkgs.legacyPackages.${system};
       pico-sdk151 = with pkgs; (pico-sdk.overrideAttrs (o:
         rec {
         pname = "pico-sdk";
@@ -19,7 +20,6 @@
           sha256 = "sha256-gLC0FX4aJT0+srjoObMx68Pc4RzqmakJqrPqFLzyM8Q=";
         };
         }));
-      pkgs = nixpkgs.legacyPackages.${system};
     in {
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
