@@ -1,7 +1,27 @@
 #ifndef _PICO_LIBSDEMU_H_
 #define _PICO_LIBSDEMU_H_
 
-#include "hardware/spi.h"
+#include "pico/stdlib.h"
+
+#ifndef SD_DEFAULT_PIO
+#define SD_DEFAULT_PIO pio1
+#endif
+
+#ifndef SD_DEFAULT_TX_PIN
+#define SD_DEFAULT_TX_PIN 10
+#endif
+#ifndef SD_DEFAULT_RX_PIN
+#define SD_DEFAULT_RX_PIN 11
+#endif
+#ifndef SD_DEFAULT_SCK_PIN
+#define SD_DEFAULT_SCK_PIN 12
+#endif
+
+#if (SD_DEFAULT_RX_PIN + 1) != SD_DEFAULT_SCK_PIN
+#error "SD_DEFAULT_RX_PIN must be 1 less than SD_DEFAULT_SCK_PIN"
+#endif
+
+
 
 #define SD_CMD_LEN 0x6
 
@@ -41,11 +61,11 @@
  *  0xFF when they are idle/ready for commands, but the RP2040 will default
  *  to 0x00 if nothing is in the buffer
  */
-void setup_sd_emu(spi_inst_t* spi);
+void setup_sd_emu();
 
-void wait_for_cmd(spi_inst_t* spi, uint8_t* cmd_buf);
+void wait_for_cmd(uint8_t* cmd_buf);
 
-void handle_cmd(spi_inst_t* spi, uint8_t* cmd_buf);
+void handle_cmd(uint8_t* cmd_buf);
 
 
 #endif

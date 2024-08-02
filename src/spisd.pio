@@ -1,0 +1,31 @@
+.program spisd_tx
+
+    ; Pin assignments:
+    ; - SCK is IN pin 0
+    ; - MOSI (SPI TX) is OUT pin 0
+    ; Config notes
+    ; - Autopull should be off
+    ; - Enable FIFO joining for 8 deep TX FIFO
+
+
+	; Default value should be 0xff
+	mov x, !null
+.wrap_target
+	pull ifempty noblock
+	out pins, 1
+	; TODO: figure out clock polarity
+	wait 1 pin 0
+	wait 0 pin 0
+.wrap
+
+.program spisd_rx
+
+    ; Pin assignments:
+    ; - SCK is IN pin 1
+    ; - MISO (SPI RX) is IN PIN 0
+
+.wrap_target
+	wait 0 pin 1
+	wait 1 pin 1
+	in pins, 1
+.wrap

@@ -9,8 +9,6 @@
 #include "libsdemu.h"
 #include "image.h"
 
-#define DEFAULT_SPI PICO_DEFAULT_SPI ? spi1 : spi0
-
 void printbuf(uint8_t buf[], size_t len)
 {
   char resp[128];
@@ -66,13 +64,8 @@ bool write_sd_block(uint32_t block_num, uint8_t *buff) {
 }
 
 void init_sd() {
-    printf("Initializing SPI\n");
-    gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
-
-    setup_sd_emu(DEFAULT_SPI);
+    printf("Initializing SD SPI\n");
+    setup_sd_emu();
 }
 
 int main() {
@@ -85,8 +78,8 @@ int main() {
     init_sd();
 
     while(1) {
-        wait_for_cmd(DEFAULT_SPI, cmd_buf);
-        handle_cmd(DEFAULT_SPI, cmd_buf);
+        wait_for_cmd(cmd_buf);
+        handle_cmd(cmd_buf);
     }
     return 0;
 }
